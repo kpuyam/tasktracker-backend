@@ -1,0 +1,31 @@
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore the Django secret key file (if not already configured to use environment variables)
+tasktracker/settings/secret.py
+
+# Ignore database file
+db.sqlite3
+
+# Ignore environment-specific settings (e.g., production settings)
+tasktracker/settings/local.py
+tasktracker/settings/production.py
+
+# Ignore logs
+*.log
+
+# Ignore static files collected by Django
+/static/
+
+# Ignore media files
+/media/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore editor-specific temporary files
+*~
+
+# Ignore backup files
+*.bak
