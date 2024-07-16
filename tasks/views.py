@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Project, Task, Role
@@ -21,6 +21,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['project__id']
+    
+    def get_queryset(self):
+        project_id = self.request.query_params.get('project', None)
+        if project_id is not None:
+            return self.queryset.filter(project__id=project_id)
+        return self.queryset
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
