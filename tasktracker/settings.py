@@ -44,6 +44,11 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -87,7 +92,7 @@ WSGI_APPLICATION = "tasktracker.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'tasktracker',
+        'NAME': 'team_tracker',
         'USER': 'root',
         'PASSWORD': 'Root@123'
     }
