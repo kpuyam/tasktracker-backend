@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from .models import Project, Task, Role
-from .serializers import ProjectSerializer, TaskSerializer, RoleSerializer
+from .serializers import ProjectSerializer, TaskSerializer, RoleSerializer, UserSerializer
 
 # Create your views here.
 
@@ -49,3 +49,7 @@ class SignupView(APIView):
             return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
         user = User.objects.create_user(username=username, password=password)
         return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
