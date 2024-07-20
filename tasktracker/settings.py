@@ -92,7 +92,7 @@ WSGI_APPLICATION = "tasktracker.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'tasktracker',
+        'NAME': 'team_tracker',
         'USER': 'root',
         'PASSWORD': 'Root@123'
     }
