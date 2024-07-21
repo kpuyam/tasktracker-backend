@@ -1,6 +1,5 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
-from django.shortcuts import render
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -16,6 +15,46 @@ from .serializers import (
 )
 
 # Create your views here.
+
+
+@api_view(['GET'])
+def get_users_by_project(request, project_id):
+    try:
+        # Get the project by ID
+        project = Project.objects.get(pk=project_id)
+
+        # Get the project owner
+        project_owner = project.owner
+
+        # Get all roles for the project
+        roles = Role.objects.filter(project=project)
+
+        # Get all users associated with these roles
+        users = User.objects.filter(roles__in=roles).distinct()
+
+        # Serialize the project owner and users
+        project_owner_serializer = UserSerializer(project_owner)
+        users_serializer = UserSerializer(users, many=True)
+
+        print("Project Owner Data:", project_owner_serializer.data)
+        print("Users Data:", users_serializer.data)
+
+        # Prepare the response data
+        response_data = {
+            'project': ProjectSerializer(project).data,
+            'project_owner': project_owner_serializer.data,
+            'users': users_serializer.data
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Project.DoesNotExist:
+        return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        # Handle any unexpected errors
+        print(f"Unexpected error: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 @api_view(['GET'])
@@ -67,7 +106,7 @@ class SignupView(APIView):
         first_name = request.data.get('first_name')
         last_name = request.data.get('last_name')
         email = request.data.get('email')
-        print("Hellloo sign up")
+
         if not username or not password:
             return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(username=username).exists():

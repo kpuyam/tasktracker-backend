@@ -15,6 +15,7 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RoleSerializer(serializers.ModelSerializer):
+    users = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
     class Meta:
         model = Role
         fields = '__all__'
