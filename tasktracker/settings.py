@@ -47,7 +47,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
+
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -89,7 +93,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'tasktracker',
         'USER': 'root',
-        'PASSWORD': 'Root@123'
+        'PASSWORD': 'VIshal@2410'
     }
 }
 
