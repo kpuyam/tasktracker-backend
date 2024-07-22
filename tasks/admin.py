@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Project, Task, Role
+
+from .models import Project, Role, Task
 
 # Register your models here.
 
@@ -13,7 +14,4 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ('status', 'project')
     search_fields = ('description',)
 
-@admin.register(Role)
-class RoleAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    filter_horizontal = ('users',)
+admin.site.register(Role)

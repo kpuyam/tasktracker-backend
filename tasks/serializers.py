@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Project, Task, Role
+
+from .models import Project, Role, Task
+
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,10 +15,11 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RoleSerializer(serializers.ModelSerializer):
-    users = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
+    # users = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
     class Meta:
         model = Role
         fields = '__all__'
+
 
 class UserSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True)

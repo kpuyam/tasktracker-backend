@@ -16,10 +16,20 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from tasks.views import find_projects,get_user_details,get_users_by_project, ProjectViewSet, TaskViewSet, RoleViewSet, SignupView, UserViewSet
+from tasks.views import (
+    ProjectViewSet,
+    RoleViewSet,
+    SignupView,
+    TaskViewSet,
+    UserViewSet,
+    find_projects,
+    get_user_details,
+    get_users_by_project,
+    update_user_role,
+)
 
 router = DefaultRouter()
 router.register(r"projects", ProjectViewSet)
@@ -34,6 +44,7 @@ urlpatterns = [
     path('api/signup/', SignupView.as_view(), name='signup'),
     path('api/users_by_project/<int:project_id>/', get_users_by_project, name='get_users_by_project'),
     path('api/user_details/', get_user_details, name='user_details'),
+    path('api/update-user-role/', update_user_role, name='update_user_role'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
