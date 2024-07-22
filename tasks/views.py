@@ -1,16 +1,17 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import viewsets, filters, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from .models import Project, Task, Role
 from .serializers import ProjectSerializer, TaskSerializer, RoleSerializer, UserSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.hashers import make_password
-# Create your views here.
 
+# Create your views here.
 
 @api_view(['GET'])
 def get_users_by_project(request, project_id):
@@ -73,18 +74,36 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['project__id']
+    # filter_backends = [filters.SearchFilter]
+    # search_fields = ['project__id']
 
-    def get_queryset(self):
-        project_id = self.request.query_params.get('project', None)
-        if project_id is not None:
-            return self.queryset.filter(project__id=project_id)
-        return self.queryset
+    # def get_queryset(self):
+    #     project_id = self.request.query_params.get('project', None)
+    #     if project_id is not None:
+    #         return self.queryset.filter(project__id=project_id)
+    #     return self.queryset
 
-class RoleViewSet(viewsets.ModelViewSet):
+class RoleViewSet(ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
+
+    @action(detail=True, methods=['post'])
+    def update_user(self, request, pk=None):
+        role = self.get_object()
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
+            return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Add user to the role
+        role.users.add(user)
+        role.save()
+        
+        return Response({'status': 'User added to role'}, status=status.HTTP_200_OK)
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
