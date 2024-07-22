@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 # Create your models here.
 
@@ -13,6 +13,7 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+
 class Task(models.Model):
     STATUS_CHOICES = [
         ('new', 'New'),
@@ -20,6 +21,7 @@ class Task(models.Model):
         ('blocked', 'Blocked'),
         ('completed', 'Completed'),
         ('not_started', 'Not Started'),
+        ('accepted', 'Accepted'),
     ]
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
@@ -38,10 +40,16 @@ class Role(models.Model):
         ('read_only', 'Read Only'),
     ]
 
-    name = models.CharField(max_length=50, choices=ROLE_CHOICES, unique=True)
-    users = models.ManyToManyField(User, related_name='roles')
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='roles')
-    
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='read_only')
+    user = models.ForeignKey(User, related_name='role', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('role', 'user')
+
     def __str__(self):
-        users = ", ".join([user.username for user in self.users.all()])
-        return f"{users} - {self.get_name_display()} in {self.project.name}"
+        return f"{self.user.username} - {self.get_role_display()}"
+
+    def save(self, *args, **kwargs):
+        # Remove any existing roles for this user
+        Role.objects.filter(user=self.user).delete()
+        super().save(*args, **kwargs)
