@@ -40,8 +40,8 @@ class Role(models.Model):
 
     name = models.CharField(max_length=50, choices=ROLE_CHOICES, unique=True)
     users = models.ManyToManyField(User, related_name='roles')
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='roles')
+    # project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='roles')
     
-    def __str__(self):
-        users = ", ".join([user.username for user in self.users.all()])
-        return f"{users} - {self.get_name_display()} in {self.project.name}"
+    # def __str__(self):
+    #     users = ", ".join([user.username for user in self.users.all()])
+    #     return f"{users} - {self.get_name_display()} in {self.project.name}"
