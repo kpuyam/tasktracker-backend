@@ -40,12 +40,30 @@ def get_users_by_project(request, project_id):
             'project_owner': project_owner_serializer.data,  # Assuming you want the username of the project owner
             'users': users_serializer.data  # Serialized data of users who are owners of tasks in this project
         }
-        print("project_owner_details :: ",project_owner_serializer.data)
         return Response(response_data, status=status.HTTP_200_OK)
 
     except Project.DoesNotExist:
         return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET'])
+def get_tasks_by_project(request, project_id):
+    try:
+        project = Project.objects.get(pk=project_id)
+
+        # Fetch all tasks related to the project
+        tasks = Task.objects.filter(project=project)
+
+        # Serialize each task instance individually
+        serialized_tasks = TaskSerializer(tasks, many=True).data
+
+        response_data = {
+            'tasks': serialized_tasks,
+        }
+        # print(serialized_tasks)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except Project.DoesNotExist:
+        return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_details(request):
@@ -63,18 +81,69 @@ def find_projects(request):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    filter_backends = [filters.OrderingFilter]  # Add any additional filters you need
 
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id')
+        user_roles = Role.objects.filter(user_id=user_id).values_list('role', flat=True)
+        queryset = Project.objects.all()
+        if 'admin' in user_roles:
+            queryset = Project.objects.all()
+        elif 'read_only' in user_roles:
+            task_projects = Task.objects.filter(owner=user_id).values_list('project_id', flat=True)
+            queryset = Project.objects.filter(id__in=task_projects)
+
+        elif 'task_creator' in user_roles:
+            queryset = Project.objects.filter(owner=user_id)
+
+        return queryset
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
 
     def get_queryset(self):
-        queryset = Task.objects.all()
+        user_id = self.request.query_params.get('user_id')
+        user_roles = Role.objects.filter(user_id=user_id).values_list('role', flat=True)
         project_id = self.request.query_params.get('project')
+        queryset = Task.objects.all()
+        if 'admin' in user_roles:
+            queryset = Task.objects.all()
+        elif 'read_only' in user_roles:
+            queryset = Task.objects.filter(owner=user_id)
+        elif 'task_creator' in user_roles:
+            project_ids = Project.objects.filter(owner=user_id).values_list('id', flat=True)
+            queryset = Task.objects.filter(project_id__in=project_ids)
         if project_id:
             queryset = queryset.filter(project_id=project_id)
+
         return queryset
+
+# class TaskViewSet(viewsets.ModelViewSet):
+#     queryset = Task.objects.all()
+#     serializer_class = TaskSerializer
+
+#     filter_backends = [filters.OrderingFilter]
+
+#     def get_queryset(self):
+#         user_id = self.request.query_params.get('user_id')
+#         user_roles = Role.objects.filter(user_id=user_id).values_list('role', flat=True)
+
+#         if 'admin' in user_roles:
+#             queryset = Task.objects.all()
+#         elif 'read_only' in user_roles:
+#             task_projects = Task.objects.filter(owner=user_id).values_list('project_id', flat=True)
+#             queryset = Project.objects.filter(id__in=task_projects)
+#         else:
+#             queryset = Project.objects.filter(owner=user_id)
+
+#     def get_queryset(self):
+#         queryset = Task.objects.all()
+#         project_id = self.request.query_params.get('project')
+#         if project_id:
+#             queryset = queryset.filter(project_id=project_id)
+#         return queryset
+
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
