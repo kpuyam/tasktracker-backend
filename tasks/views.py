@@ -95,6 +95,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         elif 'task_creator' in user_roles:
             queryset = Project.objects.filter(owner=user_id)
+        elif user_id:
+            return Project.objects.none()
 
         return queryset
 
@@ -114,6 +116,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         elif 'task_creator' in user_roles:
             project_ids = Project.objects.filter(owner=user_id).values_list('id', flat=True)
             queryset = Task.objects.filter(project_id__in=project_ids)
+        elif user_id:
+            return Task.objects.none()
         if project_id:
             queryset = queryset.filter(project_id=project_id)
 
